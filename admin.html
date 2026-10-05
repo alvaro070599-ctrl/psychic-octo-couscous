@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin Botoleto</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,sans-serif;background:#e8ecf8;color:#1a1d3a;padding:20px}
+main{max-width:720px;margin:0 auto}
+h1{color:#1f2a6b;margin-bottom:16px}
+.box{background:#fff;border-radius:14px;padding:20px;margin-bottom:20px}
+form{display:grid;gap:10px}
+input,select,textarea{font:inherit;padding:11px 12px;border:2px solid #c9d0ee;border-radius:10px;width:100%}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 18px;font-weight:600;background:#1f2a6b;color:#fff}
+button.sec{background:#e8ecf8;color:#1f2a6b}
+button.perigo{background:#ffe1e8;color:#b0173b}
+.topo{display:flex;justify-content:space-between;align-items:center}
+.linha{display:flex;gap:10px;flex-wrap:wrap}
+.linha>*{flex:1}
+.prod{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e3e6f5}
+.prod img,.prod .sem{width:64px;height:64px;border-radius:10px;object-fit:cover;background:#e8ecf8}
+#prev{max-height:160px;border-radius:10px;justify-self:start}
+#erro{color:#b0173b;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<div class="box" id="login">
+  <h1>Admin Botoleto</h1>
+  <form id="fLogin"><input type="password" id="senha" placeholder="Senha de administrador" aria-label="Senha" required><button>Entrar</button></form>
+  <p id="erro" role="alert"></p>
+</div>
+<div id="painel" hidden>
+  <div class="topo"><h1>Produtos</h1><button class="sec" id="sair">Sair</button></div>
+  <div class="box">
+    <form id="fProd">
+      <input id="nome" placeholder="Nome do perfume" aria-label="Nome" required>
+      <div class="linha">
+        <select id="cat" aria-label="Categoria"><option>Feminino</option><option>Masculino</option><option>Unissex</option></select>
+        <input id="preco" type="number" step="0.01" min="0.01" placeholder="Preço (ex: 189.90)" aria-label="Preço" required>
+      </div>
+      <textarea id="notas" rows="3" placeholder="Descrição ou notas (ex: Cedro, couro e pimenta preta)" aria-label="Descrição"></textarea>
+      <label>Foto <input id="foto" type="file" accept="image/*"></label>
+      <img id="prev" alt="Prévia da foto" hidden>
+      <div class="linha"><button id="salvar">Adicionar produto</button><button type="button" class="sec" id="cancelar" hidden>Cancelar edição</button></div>
+    </form>
+  </div>
+  <div class="box" id="lista"></div>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let senha=sessionStorage.getItem('bt-admin')||'',imagem='',editando=null,produtos=[];
+const H=()=>({'Content-Type':'application/json','x-admin-password':senha});
+
+async function entrar(){
+  const r=await fetch('/api/products?auth=1',{headers:H()});
+  if(!r.ok){sessionStorage.removeItem('bt-admin');$('login').hidden=false;$('painel').hidden=true;return false}
+  produtos=await r.json();$('login').hidden=true;$('painel').hidden=false;listar();return true;
+}
+function listar(){
+  $('lista').innerHTML=produtos.length?produtos.map(p=>`<div class="prod">${p.foto?`<img src="${esc(p.foto)}" alt="">`:'<div class="sem"></div>'}<div><b>${esc(p.nome)}</b><br>${esc(p.cat)} · R$ ${p.preco.toFixed(2).replace('.',',')}</div><div class="linha"><button class="sec" data-a="e" data-id="${p.id}">Editar</button><button class="perigo" data-a="x" data-id="${p.id}">Excluir</button></div></div>`).join(''):'<p>Nenhum produto cadastrado ainda.</p>';
+}
+async function recarregar(){const r=await fetch('/api/products');produtos=await r.json();listar()}
+function limpar(){editando=null;imagem='';$('fProd').reset();$('prev').hidden=true;$('salvar').textContent='Adicionar produto';$('cancelar').hidden=true}
+
+$('fLogin').addEventListener('submit',async e=>{e.preventDefault();senha=$('senha').value;sessionStorage.setItem('bt-admin',senha);if(!await entrar())$('erro').textContent='Senha incorreta.'});
+$('sair').addEventListener('click',()=>{sessionStorage.removeItem('bt-admin');senha='';location.reload()});
+$('cancelar').addEventListener('click',limpar);
+
+$('foto').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const img=new Image();
+  img.onload=()=>{const s=Math.min(1,900/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);imagem=c.toDataURL('image/jpeg',.82);$('prev').src=imagem;$('prev').hidden=false};
+  img.src=URL.createObjectURL(f);
+});
+
+$('fProd').addEventListener('submit',async e=>{
+  e.preventDefault();$('salvar').disabled=true;
+  const r=await fetch('/api/products',{method:'POST',headers:H(),body:JSON.stringify({id:editando,nome:$('nome').value,cat:$('cat').value,preco:$('preco').value,notas:$('notas').value,imagem})});
+  $('salvar').disabled=false;
+  if(!r.ok){const d=await r.json().catch(()=>({}));alert(d.erro||'Não foi possível salvar.');return}
+  limpar();recarregar();
+});
+
+$('lista').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,p=produtos.find(x=>x.id===id);
+  if(b.dataset.a==='e'&&p){editando=id;imagem='';$('nome').value=p.nome;$('cat').value=p.cat;$('preco').value=p.preco;$('notas').value=p.notas;if(p.foto){$('prev').src=p.foto;$('prev').hidden=false}else $('prev').hidden=true;$('salvar').textContent='Salvar alterações';$('cancelar').hidden=false;scrollTo({top:0,behavior:'smooth'})}
+  if(b.dataset.a==='x'&&confirm('Excluir este produto?')){await fetch('/api/products?id='+id,{method:'DELETE',headers:H()});recarregar()}
+});
+if(senha)entrar();
+</script>
+</body>
+</html>

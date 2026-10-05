@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Botoleto Perfumes</title>
+<meta name="description" content="Perfumes Botoleto: fragrâncias femininas, masculinas e unissex com frete grátis acima de R$ 299.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1f2a6b;--azul-2:#141c4d;--nevoa:#e8ecf8;--coral:#ff6f91;--branco:#fff;--texto:#1a1d3a;--cinza:#5d6285;--raio:14px}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:Figtree,system-ui,sans-serif;color:var(--texto);background:var(--branco);line-height:1.55}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;line-height:1.1}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:20;background:var(--azul);color:#fff}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.5rem;text-decoration:none;letter-spacing:-.5px}
+.nav nav{display:flex;gap:22px}
+.nav nav a{text-decoration:none;font-weight:500;opacity:.9}
+.nav nav a:hover{opacity:1}
+.cart-btn{background:var(--coral);color:var(--azul-2);border:0;border-radius:99px;padding:9px 18px;font-weight:600}
+.cart-btn span{background:var(--azul-2);color:#fff;border-radius:99px;padding:1px 8px;margin-left:6px;font-size:.85rem}
+.hero{background:var(--azul);color:#fff;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding-top:56px;padding-bottom:64px}
+.hero h1{font-size:clamp(2.6rem,6vw,4.6rem);font-weight:800;letter-spacing:-2px}
+.hero p{margin:18px 0 28px;max-width:46ch;color:#d3d9f5;font-size:1.1rem}
+.btn{display:inline-block;background:var(--coral);color:var(--azul-2);border:0;border-radius:99px;padding:14px 28px;font-weight:600;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.hero-art{display:flex;justify-content:center;gap:10px;align-items:flex-end}
+.hero-art svg{width:34%;filter:drop-shadow(0 18px 24px rgba(0,0,0,.35))}
+.hero-art svg:nth-child(2){width:42%;margin-bottom:26px}
+.faixa{background:var(--nevoa)}
+.faixa .wrap{display:flex;flex-wrap:wrap;gap:12px 40px;justify-content:space-between;padding-top:16px;padding-bottom:16px;font-weight:500;color:var(--azul)}
+section{padding:64px 0}
+.titulo{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:end;margin-bottom:28px}
+.titulo h2{font-size:clamp(1.9rem,4vw,2.7rem);letter-spacing:-1px;color:var(--azul)}
+.filtros{display:flex;gap:8px;flex-wrap:wrap}
+.filtros button{border:2px solid var(--azul);background:#fff;color:var(--azul);border-radius:99px;padding:7px 16px;font-weight:600}
+.filtros button[aria-pressed=true]{background:var(--azul);color:#fff}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:22px}
+.card{border:1px solid #d9def2;border-radius:var(--raio);overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.card .foto{background:var(--nevoa);display:grid;place-items:center;padding:26px 0 16px}
+.card .foto svg{height:150px}
+.card .info{padding:16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:1.2rem;color:var(--azul)}
+.card .notas{color:var(--cinza);font-size:.92rem;flex:1}
+.preco{font-weight:700;font-size:1.15rem}
+.preco small{font-weight:400;color:var(--cinza);font-size:.82rem;display:block}
+.card .add{margin-top:8px;background:var(--azul);color:#fff;border:0;border-radius:10px;padding:11px;font-weight:600}
+.card .add:hover{background:var(--azul-2)}
+.sobre{background:var(--nevoa)}
+.sobre .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.sobre h2{font-size:clamp(1.9rem,4vw,2.7rem);color:var(--azul);margin-bottom:14px;letter-spacing:-1px}
+.sobre ul{list-style:none;padding:0;display:grid;gap:12px}
+.sobre li{background:#fff;border-radius:var(--raio);padding:16px 18px}
+.sobre li b{display:block;color:var(--azul)}
+.news form{display:flex;gap:10px;flex-wrap:wrap}
+.news input,.chk input{flex:1;min-width:200px;padding:13px 16px;border:2px solid #c9d0ee;border-radius:10px;font:inherit}
+.msg{margin-top:12px;font-weight:600;color:var(--azul)}
+footer{background:var(--azul-2);color:#c9d0ee;padding:36px 0;font-size:.95rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+.card .foto:has(img){padding:0}.card .foto img{width:100%;height:210px;object-fit:cover}.item img{height:52px;width:48px;object-fit:cover;border-radius:8px}
+/* carrinho */
+.fundo{position:fixed;inset:0;background:rgba(10,14,40,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
+.fundo.on{opacity:1;pointer-events:auto}
+.gaveta{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:#fff;z-index:31;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+.gaveta.on{transform:none}
+.gaveta header{position:static;display:flex;justify-content:space-between;align-items:center;padding:16px 20px}
+.gaveta header h2{font-size:1.3rem}
+.fechar{background:none;border:0;color:#fff;font-size:1.6rem}
+.itens{flex:1;overflow:auto;padding:12px 20px}
+.item{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #e3e6f5}
+.item svg{height:52px;width:48px;background:var(--nevoa);border-radius:8px;padding:4px}
+.item b{display:block;color:var(--azul)}
+.qtd{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qtd button{width:28px;height:28px;border-radius:8px;border:1px solid #c9d0ee;background:#fff}
+.remover{background:none;border:0;color:var(--cinza);text-decoration:underline;font-size:.85rem}
+.vazio{padding:40px 0;text-align:center;color:var(--cinza)}
+.rodape{border-top:1px solid #e3e6f5;padding:16px 20px;display:grid;gap:10px}
+.linha{display:flex;justify-content:space-between}
+.linha.total{font-weight:700;font-size:1.2rem}
+.cupom{display:flex;gap:8px}
+.cupom input{flex:1;padding:10px 12px;border:2px solid #c9d0ee;border-radius:10px;font:inherit}
+.cupom button{border:0;background:var(--nevoa);color:var(--azul);border-radius:10px;padding:0 16px;font-weight:600}
+.rodape .btn{width:100%;text-align:center}
+.rodape .btn:disabled{opacity:.5;cursor:not-allowed}
+.modal{position:fixed;inset:0;display:none;place-items:center;z-index:40;padding:16px}
+.modal.on{display:grid}
+.modal .caixa{background:#fff;border-radius:var(--raio);padding:26px;width:min(460px,100%);max-height:92vh;overflow:auto}
+.modal h2{color:var(--azul);margin-bottom:6px}
+.chk{display:grid;gap:10px;margin-top:14px}
+.chk input{min-width:0;width:100%}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:780px){.hero .wrap,.sobre .wrap{grid-template-columns:1fr}.hero-art{order:-1;max-width:300px;margin:0 auto}.nav nav{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a href="#topo" class="logo">Botoleto</a>
+    <nav aria-label="Principal"><a href="#perfumes">Perfumes</a><a href="#sobre">Sobre</a><a href="#novidades">Novidades</a></nav>
+    <button class="cart-btn" id="abrirCarrinho" aria-label="Abrir carrinho">Carrinho<span id="contador">0</span></button>
+  </div>
+</header>
+
+<main id="topo">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Seu cheiro, sua assinatura.</h1>
+        <p>Fragrâncias da Botoleto para todos os dias: notas frescas, amadeiradas e florais, em frascos de 100 ml.</p>
+        <a class="btn" href="#perfumes">Ver perfumes</a>
+      </div>
+      <div class="hero-art" id="heroArt" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="faixa"><div class="wrap"><span>Frete grátis acima de R$ 299</span><span>Até 6x sem juros</span><span>Troca em até 30 dias</span><span>Cupom BOTO10: 10% na primeira compra</span></div></div>
+
+  <section id="perfumes">
+    <div class="wrap">
+      <div class="titulo">
+        <h2>Nossos perfumes</h2>
+        <div class="filtros" id="filtros" role="group" aria-label="Filtrar por categoria"></div>
+      </div>
+      <div class="grade" id="grade"></div>
+    </div>
+  </section>
+
+  <section class="sobre" id="sobre">
+    <div class="wrap">
+      <div>
+        <h2>Feitos para durar o dia inteiro</h2>
+        <p>Cada fragrância Botoleto tem alta concentração de essência e fixação de até 10 horas. Escolha pelo estilo, pela ocasião ou pelas notas que você mais gosta.</p>
+      </div>
+      <ul>
+        <li><b>Fixação de até 10 horas</b>Concentração Eau de Parfum em todos os frascos.</li>
+        <li><b>Embalagem segura</b>Seu pedido chega protegido e lacrado.</li>
+        <li><b>Atendimento próximo</b>Dúvida sobre qual perfume escolher? Fale com a gente.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="news" id="novidades">
+    <div class="wrap">
+      <div class="titulo"><h2>Receba lançamentos e ofertas</h2></div>
+      <form id="formNews">
+        <input type="email" id="emailNews" placeholder="Seu e-mail" aria-label="Seu e-mail" required>
+        <button class="btn" type="submit">Quero receber</button>
+      </form>
+      <p class="msg" id="msgNews" role="status"></p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© <span id="ano"></span> Botoleto Perfumes. Todos os direitos reservados.</span><span>contato@botoleto.com.br</span></div></footer>
+
+<div class="fundo" id="fundo"></div>
+<aside class="gaveta" id="gaveta" aria-label="Carrinho de compras" aria-hidden="true">
+  <header><h2>Seu carrinho</h2><button class="fechar" id="fecharCarrinho" aria-label="Fechar carrinho">&times;</button></header>
+  <div class="itens" id="itens"></div>
+  <div class="rodape">
+    <div class="cupom"><input id="cupom" placeholder="Cupom de desconto" aria-label="Cupom de desconto"><button id="aplicarCupom">Aplicar</button></div>
+    <div class="linha"><span>Subtotal</span><span id="subtotal"></span></div>
+    <div class="linha"><span>Desconto</span><span id="desconto"></span></div>
+    <div class="linha"><span>Frete</span><span id="frete"></span></div>
+    <div class="linha total"><span>Total</span><span id="total"></span></div>
+    <button class="btn" id="finalizar" disabled>Finalizar compra</button>
+  </div>
+</aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+  <div class="fundo on" id="modalFundo"></div>
+  <div class="caixa" style="position:relative;z-index:41">
+    <div id="telaForm">
+      <h2 id="modalTitulo">Finalizar compra</h2>
+      <p style="color:var(--cinza)">Preencha seus dados para receber o pedido.</p>
+      <form class="chk" id="formCompra">
+        <input name="nome" placeholder="Nome completo" aria-label="Nome completo" required>
+        <input name="email" type="email" placeholder="E-mail" aria-label="E-mail" required>
+        <div class="dois"><input name="cep" placeholder="CEP" aria-label="CEP" required><input name="numero" placeholder="Número" aria-label="Número" required></div>
+        <input name="endereco" placeholder="Endereço" aria-label="Endereço" required>
+        <button class="btn" type="submit">Ir para o pagamento</button>
+      </form>
+    </div>
+    <div id="telaOk" hidden>
+      <h2>Pedido recebido!</h2>
+      <p style="margin:10px 0 18px">Obrigado pela compra. Enviamos os detalhes para o seu e-mail. Número do pedido: <b id="numPedido"></b></p>
+      <button class="btn" id="fecharModal">Voltar à loja</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let PRODUTOS=[];
+const FRETE_GRATIS=299,FRETE=24.9;
+const $=id=>document.getElementById(id);
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+let carrinho=[],cupomAtivo=false,filtro='Todos';
+try{carrinho=JSON.parse(localStorage.getItem('botoleto-carrinho'))||[];cupomAtivo=localStorage.getItem('botoleto-cupom')==='1'}catch(e){}
+
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function arte(p){return p.foto?`<img src="${esc(p.foto)}" alt="${esc(p.nome)}" loading="lazy">`:frasco(p.cor||'#8a93d6')}
+function frasco(cor,id){
+ return `<svg viewBox="0 0 80 120" role="img" aria-label="Frasco de perfume"><rect x="30" y="4" width="20" height="16" rx="3" fill="#1f2a6b"/><rect x="35" y="18" width="10" height="8" fill="#c9d0ee"/><rect x="8" y="26" width="64" height="90" rx="14" fill="${cor}"/><rect x="14" y="32" width="10" height="78" rx="5" fill="#fff" opacity=".28"/><rect x="26" y="58" width="40" height="28" rx="4" fill="#fff" opacity=".9"/><text x="46" y="76" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="700" fill="#1f2a6b">BOTOLETO</text></svg>`;
+}
+$('heroArt').innerHTML=frasco('#ff8fab')+frasco('#3aa0d8')+frasco('#e8943a');
+$('ano').textContent=new Date().getFullYear();
+
+function renderFiltros(){
+ const cats=['Todos','Feminino','Masculino','Unissex'];
+ $('filtros').innerHTML=cats.map(c=>`<button aria-pressed="${c===filtro}" data-cat="${c}">${c}</button>`).join('');
+}
+function renderGrade(){
+ const lista=PRODUTOS.filter(p=>filtro==='Todos'||p.cat===filtro);
+ $('grade').innerHTML=!lista.length?'<p class="vazio">Nenhum perfume cadastrado nesta categoria ainda.</p>':lista.map(p=>`<article class="card"><div class="foto">${arte(p)}</div><div class="info"><h3>${esc(p.nome)}</h3><p class="notas">${esc(p.cat)} · ${esc(p.notas)}</p><div class="preco">${brl(p.preco)}<small>ou 6x de ${brl(p.preco/6)}</small></div><button class="add" data-id="${p.id}">Adicionar ao carrinho</button></div></article>`).join('');
+}
+$('filtros').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filtro=b.dataset.cat;renderFiltros();renderGrade()});
+$('grade').addEventListener('click',e=>{const b=e.target.closest('.add');if(!b)return;adicionar(+b.dataset.id)});
+
+function salvar(){try{localStorage.setItem('botoleto-carrinho',JSON.stringify(carrinho));localStorage.setItem('botoleto-cupom',cupomAtivo?'1':'0')}catch(e){}}
+function adicionar(id){
+ const it=carrinho.find(i=>i.id===id);
+ it?it.qtd++:carrinho.push({id,qtd:1});
+ salvar();renderCarrinho();abrir();
+}
+function alterar(id,d){
+ const it=carrinho.find(i=>i.id===id);if(!it)return;
+ it.qtd+=d;if(it.qtd<=0)carrinho=carrinho.filter(i=>i.id!==id);
+ salvar();renderCarrinho();
+}
+function remover(id){carrinho=carrinho.filter(i=>i.id!==id);salvar();renderCarrinho()}
+function renderCarrinho(){
+ const total_itens=carrinho.reduce((s,i)=>s+i.qtd,0);
+ $('contador').textContent=total_itens;
+ if(!carrinho.length){$('itens').innerHTML='<p class="vazio">Seu carrinho está vazio. Escolha um perfume para começar.</p>'}
+ else{$('itens').innerHTML=carrinho.map(i=>{const p=PRODUTOS.find(x=>x.id===i.id);return `<div class="item">${arte(p)}<div><b>${esc(p.nome)}</b>${brl(p.preco)}<div class="qtd"><button data-a="menos" data-id="${p.id}" aria-label="Diminuir quantidade">−</button><span>${i.qtd}</span><button data-a="mais" data-id="${p.id}" aria-label="Aumentar quantidade">+</button></div></div><button class="remover" data-a="rm" data-id="${p.id}">Remover</button></div>`}).join('')}
+ const sub=carrinho.reduce((s,i)=>s+PRODUTOS.find(p=>p.id===i.id).preco*i.qtd,0);
+ const desc=cupomAtivo?sub*0.1:0;
+ const base=sub-desc;
+ const fr=!carrinho.length?0:(base>=FRETE_GRATIS?0:FRETE);
+ $('subtotal').textContent=brl(sub);
+ $('desconto').textContent=desc?'− '+brl(desc):brl(0);
+ $('frete').textContent=carrinho.length?(fr?brl(fr):'Grátis'):brl(0);
+ $('total').textContent=brl(base+fr);
+ $('finalizar').disabled=!carrinho.length;
+}
+$('itens').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id;
+ if(b.dataset.a==='mais')alterar(id,1);else if(b.dataset.a==='menos')alterar(id,-1);else if(b.dataset.a==='rm')remover(id)});
+$('aplicarCupom').addEventListener('click',()=>{
+ const v=$('cupom').value.trim().toUpperCase();
+ if(v==='BOTO10'){cupomAtivo=true;salvar();renderCarrinho();$('cupom').value='';$('cupom').placeholder='Cupom BOTO10 aplicado'}
+ else{$('cupom').value='';$('cupom').placeholder='Cupom inválido. Tente BOTO10'}
+});
+
+function abrir(){$('gaveta').classList.add('on');$('fundo').classList.add('on');$('gaveta').setAttribute('aria-hidden','false')}
+function fechar(){$('gaveta').classList.remove('on');$('fundo').classList.remove('on');$('gaveta').setAttribute('aria-hidden','true')}
+$('abrirCarrinho').addEventListener('click',abrir);
+$('fecharCarrinho').addEventListener('click',fechar);
+$('fundo').addEventListener('click',fechar);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){fechar();fecharModalFn()}});
+
+function fecharModalFn(){$('modal').classList.remove('on')}
+$('finalizar').addEventListener('click',()=>{fechar();$('telaForm').hidden=false;$('telaOk').hidden=true;$('modal').classList.add('on')});
+$('modalFundo').addEventListener('click',fecharModalFn);
+$('fecharModal').addEventListener('click',fecharModalFn);
+$('formCompra').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const f=Object.fromEntries(new FormData(e.target)),btn=e.target.querySelector('button');
+ btn.disabled=true;btn.textContent='Abrindo pagamento...';
+ try{
+  const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({itens:carrinho,cupom:cupomAtivo?'BOTO10':'',cliente:f})});
+  const d=await r.json();
+  if(!r.ok||!d.url)throw new Error(d.erro||'Falha');
+  location.href=d.url;
+ }catch(err){alert('Não foi possível abrir o pagamento: '+err.message);btn.disabled=false;btn.textContent='Ir para o pagamento'}
+});
+$('formNews').addEventListener('submit',e=>{
+ e.preventDefault();
+ $('msgNews').textContent='Cadastro feito! Você vai receber nossas novidades em '+$('emailNews').value+'.';
+ e.target.reset();
+});
+
+renderFiltros();
+fetch('/api/products').then(r=>r.json()).then(l=>{if(Array.isArray(l)){PRODUTOS=l;carrinho=carrinho.filter(i=>PRODUTOS.find(p=>p.id===i.id))}}).catch(()=>{}).finally(()=>{
+ const pg=new URLSearchParams(location.search).get('pagamento');
+ if(pg==='ok'){carrinho=[];cupomAtivo=false;setTimeout(()=>alert('Pagamento aprovado! Obrigado pela compra.'),300)}
+ else if(pg==='pendente')setTimeout(()=>alert('Pagamento pendente. Assim que for confirmado, seu pedido segue.'),300)
+ else if(pg==='erro')setTimeout(()=>alert('O pagamento não foi concluído. Você pode tentar de novo.'),300);
+ if(pg)history.replaceState(null,'','/');
+ salvar();renderGrade();renderCarrinho();
+});
+</script>
+</body>
+</html>
