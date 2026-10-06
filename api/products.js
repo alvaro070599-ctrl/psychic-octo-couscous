@@ -1,15 +1,37 @@
-import { Redis } from '@upstash/redis';
 import { put, del } from '@vercel/blob';
+import { createClient } from 'redis';
 
-const redis = Redis.fromEnv();
-const KEY = 'produtos';
+let client;
+async function db() {
+  if (!client) {
+    const novo = createClient({ url: process.env.REDIS_URL });
+    novo.on('error', () => {});
+    try {
+      await novo.connect();
+    } catch (e) {
+      throw new Error('Falha ao conectar no Redis: ' + e.message);
+    }
+    client = novo;
+  }
+  return client;
+}
+async function lerLista() {
+  const r = await db();
+  const v = await r.get('produtos');
+  return v ? JSON.parse(v) : [];
+}
+async function salvarLista(lista) {
+  const r = await db();
+  await r.set('produtos', JSON.stringify(lista));
+}
+
 const CATS = ['Feminino', 'Masculino', 'Unissex'];
 const autorizado = (req) =>
   !!process.env.ADMIN_PASSWORD && req.headers['x-admin-password'] === process.env.ADMIN_PASSWORD;
 
 export default async function handler(req, res) {
   try {
-    let lista = (await redis.get(KEY)) || [];
+    let lista = await lerLista();
 
     if (req.method === 'GET') {
       if (req.query.auth && !autorizado(req)) return res.status(401).json({ erro: 'Senha incorreta' });
@@ -43,7 +65,7 @@ export default async function handler(req, res) {
         foto,
       };
       lista = atual ? lista.map((p) => (p.id === atual.id ? novo : p)) : [...lista, novo];
-      await redis.set(KEY, lista);
+      await salvarLista(lista);
       return res.status(200).json(novo);
     }
 
@@ -51,7 +73,7 @@ export default async function handler(req, res) {
       const id = Number(req.query.id);
       const alvo = lista.find((p) => p.id === id);
       if (alvo?.foto) await del(alvo.foto).catch(() => {});
-      await redis.set(KEY, lista.filter((p) => p.id !== id));
+      await salvarLista(lista.filter((p) => p.id !== id));
       return res.status(200).json({ ok: true });
     }
 

@@ -1,6 +1,29 @@
-import { Redis } from '@upstash/redis';
+import { createClient } from 'redis';
 
-const redis = Redis.fromEnv();
+let client;
+async function db() {
+  if (!client) {
+    const novo = createClient({ url: process.env.REDIS_URL });
+    novo.on('error', () => {});
+    try {
+      await novo.connect();
+    } catch (e) {
+      throw new Error('Falha ao conectar no Redis: ' + e.message);
+    }
+    client = novo;
+  }
+  return client;
+}
+async function lerLista() {
+  const r = await db();
+  const v = await r.get('produtos');
+  return v ? JSON.parse(v) : [];
+}
+async function salvarLista(lista) {
+  const r = await db();
+  await r.set('produtos', JSON.stringify(lista));
+}
+
 const FRETE_GRATIS = 299;
 const FRETE = 24.9;
 
@@ -8,7 +31,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   try {
     const { itens, cupom, cliente } = req.body || {};
-    const lista = (await redis.get('produtos')) || [];
+    const lista = await lerLista();
     const desconto = cupom === 'BOTO10' ? 0.9 : 1;
     const items = [];
     let base = 0;
