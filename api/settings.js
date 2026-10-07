@@ -15,7 +15,7 @@ async function db() {
   return client;
 }
 
-const KEY = 'config-loja';
+const KEY = process.env.LOJA_ID ? 'config-loja-' + process.env.LOJA_ID : 'config-loja';
 const autorizado = (req) =>
   !!process.env.ADMIN_PASSWORD && req.headers['x-admin-password'] === process.env.ADMIN_PASSWORD;
 
