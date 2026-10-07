@@ -186,7 +186,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
         <input name="email" type="email" placeholder="E-mail" aria-label="E-mail" required>
         <div class="dois"><input name="cep" placeholder="CEP" aria-label="CEP" required><input name="numero" placeholder="Número" aria-label="Número" required></div>
         <input name="endereco" placeholder="Endereço" aria-label="Endereço" required>
-        <button class="btn" type="submit">Ir para o pagamento</button>
+        <button class="btn" type="submit">Enviar pedido pelo WhatsApp</button>
       </form>
     </div>
     <div id="telaOk" hidden>
@@ -202,7 +202,7 @@ let PRODUTOS=[];
 const FRETE_GRATIS=299,FRETE=24.9;
 const $=id=>document.getElementById(id);
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-let carrinho=[],cupomAtivo=false,filtro='Todos';
+let CFG={whatsapp:'',nomeLoja:'Botoleto'};let carrinho=[],cupomAtivo=false,filtro='Todos';
 try{carrinho=JSON.parse(localStorage.getItem('botoleto-carrinho'))||[];cupomAtivo=localStorage.getItem('botoleto-cupom')==='1'}catch(e){}
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -270,16 +270,17 @@ function fecharModalFn(){$('modal').classList.remove('on')}
 $('finalizar').addEventListener('click',()=>{fechar();$('telaForm').hidden=false;$('telaOk').hidden=true;$('modal').classList.add('on')});
 $('modalFundo').addEventListener('click',fecharModalFn);
 $('fecharModal').addEventListener('click',fecharModalFn);
-$('formCompra').addEventListener('submit',async e=>{
+$('formCompra').addEventListener('submit',e=>{
  e.preventDefault();
- const f=Object.fromEntries(new FormData(e.target)),btn=e.target.querySelector('button');
- btn.disabled=true;btn.textContent='Abrindo pagamento...';
- try{
-  const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({itens:carrinho,cupom:cupomAtivo?'BOTO10':'',cliente:f})});
-  const d=await r.json();
-  if(!r.ok||!d.url)throw new Error(d.erro||'Falha');
-  location.href=d.url;
- }catch(err){alert('Não foi possível abrir o pagamento: '+err.message);btn.disabled=false;btn.textContent='Ir para o pagamento'}
+ if(!CFG.whatsapp){alert('Esta loja ainda não configurou o WhatsApp para receber pedidos.');return}
+ const f=Object.fromEntries(new FormData(e.target));
+ let sub=0;
+ const linhas=carrinho.map(i=>{const p=PRODUTOS.find(x=>x.id===i.id);if(!p)return '';sub+=p.preco*i.qtd;return '- '+i.qtd+'x '+p.nome+' ('+brl(p.preco*i.qtd)+')'}).filter(Boolean);
+ const desc=cupomAtivo?sub*0.1:0,base=sub-desc,fr=base>=FRETE_GRATIS?0:FRETE;
+ const msg=['*Novo pedido - '+CFG.nomeLoja+'*','','Cliente: '+f.nome,'E-mail: '+f.email,'Endereço: '+f.endereco+', '+f.numero+' - CEP '+f.cep,'','Itens:',...linhas,'','Subtotal: '+brl(sub)].concat(desc?['Desconto (BOTO10): - '+brl(desc)]:[],['Frete: '+(fr?brl(fr):'Grátis'),'*Total: '+brl(base+fr)+'*']).join('\n');
+ const url='https://wa.me/'+CFG.whatsapp+'?text='+encodeURIComponent(msg);
+ const w=window.open(url,'_blank');if(!w)location.href=url;
+ carrinho=[];cupomAtivo=false;salvar();renderCarrinho();e.target.reset();fecharModalFn();
 });
 $('formNews').addEventListener('submit',e=>{
  e.preventDefault();
@@ -288,6 +289,7 @@ $('formNews').addEventListener('submit',e=>{
 });
 
 renderFiltros();
+fetch('/api/settings').then(r=>r.json()).then(c=>{if(c&&c.nomeLoja){CFG=c;document.querySelectorAll('.logo').forEach(el=>el.textContent=c.nomeLoja);document.title=c.nomeLoja+' Perfumes'}}).catch(()=>{});
 fetch('/api/products').then(r=>r.json()).then(l=>{if(Array.isArray(l)){PRODUTOS=l;carrinho=carrinho.filter(i=>PRODUTOS.find(p=>p.id===i.id))}}).catch(()=>{}).finally(()=>{
  const pg=new URLSearchParams(location.search).get('pagamento');
  if(pg==='ok'){carrinho=[];cupomAtivo=false;setTimeout(()=>alert('Pagamento aprovado! Obrigado pela compra.'),300)}

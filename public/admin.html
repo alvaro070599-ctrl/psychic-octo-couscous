@@ -35,6 +35,15 @@ button.perigo{background:#ffe1e8;color:#b0173b}
 <div id="painel" hidden>
   <div class="topo"><h1>Produtos</h1><button class="sec" id="sair">Sair</button></div>
   <div class="box">
+    <h2 style="margin-bottom:10px;color:#1f2a6b">Configurações da loja</h2>
+    <form id="fCfg">
+      <input id="cfgNome" placeholder="Nome da loja" aria-label="Nome da loja">
+      <input id="cfgWhats" inputmode="numeric" placeholder="WhatsApp que recebe os pedidos (com DDD, ex: 11999998888)" aria-label="WhatsApp" required>
+      <button>Salvar configurações</button>
+      <p id="msgCfg" role="status" style="color:#1f2a6b;font-weight:600"></p>
+    </form>
+  </div>
+  <div class="box">
     <form id="fProd">
       <input id="nome" placeholder="Nome do perfume" aria-label="Nome" required>
       <div class="linha">
@@ -47,11 +56,13 @@ button.perigo{background:#ffe1e8;color:#b0173b}
       <div class="linha"><button id="salvar">Adicionar produto</button><button type="button" class="sec" id="cancelar" hidden>Cancelar edição</button></div>
     </form>
   </div>
+  <div class="box"><input id="busca" type="search" placeholder="Buscar produto pelo nome..." aria-label="Buscar produto"></div>
   <div class="box" id="lista"></div>
 </div>
 </main>
 <script>
 const $=id=>document.getElementById(id);
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let senha=sessionStorage.getItem('bt-admin')||'',imagem='',editando=null,produtos=[];
 const H=()=>({'Content-Type':'application/json','x-admin-password':senha});
@@ -59,10 +70,10 @@ const H=()=>({'Content-Type':'application/json','x-admin-password':senha});
 async function entrar(){
   const r=await fetch('/api/products?auth=1',{headers:H()});
   if(!r.ok){sessionStorage.removeItem('bt-admin');$('login').hidden=false;$('painel').hidden=true;return false}
-  produtos=await r.json();$('login').hidden=true;$('painel').hidden=false;listar();return true;
+  produtos=await r.json();$('login').hidden=true;$('painel').hidden=false;listar();carregarCfg();return true;
 }
 function listar(){
-  $('lista').innerHTML=produtos.length?produtos.map(p=>`<div class="prod">${p.foto?`<img src="${esc(p.foto)}" alt="">`:'<div class="sem"></div>'}<div><b>${esc(p.nome)}</b><br>${esc(p.cat)} · R$ ${p.preco.toFixed(2).replace('.',',')}</div><div class="linha"><button class="sec" data-a="e" data-id="${p.id}">Editar</button><button class="perigo" data-a="x" data-id="${p.id}">Excluir</button></div></div>`).join(''):'<p>Nenhum produto cadastrado ainda.</p>';
+  const q=norm($('busca').value);const vis=produtos.filter(p=>norm(p.nome).includes(q));$('lista').innerHTML=!produtos.length?'<p>Nenhum produto cadastrado ainda.</p>':!vis.length?'<p>Nenhum produto encontrado.</p>':vis.map(p=>`<div class="prod">${p.foto?`<img src="${esc(p.foto)}" alt="">`:'<div class="sem"></div>'}<div><b>${esc(p.nome)}</b><br>${esc(p.cat)} · R$ ${p.preco.toFixed(2).replace('.',',')}</div><div class="linha"><button class="sec" data-a="e" data-id="${p.id}">Editar</button><button class="perigo" data-a="x" data-id="${p.id}">Excluir</button></div></div>`).join('');
 }
 async function recarregar(){const r=await fetch('/api/products');produtos=await r.json();listar()}
 function limpar(){editando=null;imagem='';$('fProd').reset();$('prev').hidden=true;$('salvar').textContent='Adicionar produto';$('cancelar').hidden=true}
@@ -91,6 +102,16 @@ $('lista').addEventListener('click',async e=>{
   if(b.dataset.a==='e'&&p){editando=id;imagem='';$('nome').value=p.nome;$('cat').value=p.cat;$('preco').value=p.preco;$('notas').value=p.notas;if(p.foto){$('prev').src=p.foto;$('prev').hidden=false}else $('prev').hidden=true;$('salvar').textContent='Salvar alterações';$('cancelar').hidden=false;scrollTo({top:0,behavior:'smooth'})}
   if(b.dataset.a==='x'&&confirm('Excluir este produto?')){await fetch('/api/products?id='+id,{method:'DELETE',headers:H()});recarregar()}
 });
+async function carregarCfg(){
+  try{const c=await (await fetch('/api/settings')).json();$('cfgNome').value=c.nomeLoja||'';$('cfgWhats').value=c.whatsapp||''}catch(e){}
+}
+$('fCfg').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const r=await fetch('/api/settings',{method:'POST',headers:H(),body:JSON.stringify({nomeLoja:$('cfgNome').value,whatsapp:$('cfgWhats').value})});
+  const d=await r.json().catch(()=>({}));
+  $('msgCfg').textContent=r.ok?'Configurações salvas!':(d.erro||'Não foi possível salvar.');
+});
+$('busca').addEventListener('input',listar);
 if(senha)entrar();
 </script>
 </body>
