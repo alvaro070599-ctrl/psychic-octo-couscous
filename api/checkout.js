@@ -26,9 +26,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    const { itens, cupom, cliente } = req.body || {};
+    // Removemos totalmente a busca por cupom
+    const { itens, cliente } = req.body || {};
     const lista = await lerLista();
-    const desconto = cupom === 'BOTO10' ? 0.9 : 1;
     
     const items = [];
     let base = 0;
@@ -38,7 +38,8 @@ export default async function handler(req, res) {
       const q = Math.min(Math.max(parseInt(i.qtd) || 0, 0), 20);
       if (!p || !q) continue;
 
-      const unit = Math.round(p.preco * desconto * 100) / 100;
+      // Apenas o preço original do produto, sem descontos
+      const unit = Math.round(p.preco * 100) / 100;
       base += unit * q;
       
       items.push({
@@ -51,13 +52,14 @@ export default async function handler(req, res) {
 
     if (!items.length) return res.status(400).json({ erro: 'Carrinho vazio' });
 
+    // Valor total formatado
     const totalFormatado = base.toFixed(2);
     
     return res.status(200).json({
-      mensagem: "Pedido processado com sucesso.",
+      sucesso: true,
       itens: items,
       total: totalFormatado,
-      cliente: cliente
+      cliente: cliente || {}
     });
 
   } catch (e) {
