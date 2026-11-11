@@ -199,6 +199,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
 
 <script>
 let PRODUTOS=[];
+let ERRO_PRODUTOS='';
 const $=id=>document.getElementById(id);
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 let CFG={whatsapp:'',nomeLoja:'Botoleto'};let carrinho=[],filtro='Todos';
@@ -221,7 +222,8 @@ function renderFiltros(){
 }
 function renderGrade(){
  const lista=PRODUTOS.filter(p=>filtro==='Todos'||p.cat===filtro);
- $('grade').innerHTML=!lista.length?'<p class="vazio">Nenhum perfume cadastrado nesta categoria ainda.</p>':lista.map(p=>`<article class="card"><div class="foto">${arte(p)}</div><div class="info"><h3>${esc(p.nome)}</h3><p class="notas">${esc(p.cat)} · ${esc(p.notas)}</p><div class="preco">${brl(p.preco)}</div><button class="add" data-id="${p.id}">Adicionar ao carrinho</button></div></article>`).join('');
+ if(ERRO_PRODUTOS){$('grade').innerHTML='<p class="vazio" role="alert">'+esc(ERRO_PRODUTOS)+'</p>';return}
+ $('grade').innerHTML=!lista.length?'<p class="vazio">Nenhum perfume cadastrado nesta categoria ainda.</p>':lista.map(p=>`<article class="card"><div class="foto">${arte(p)}</div><div class="info"><h3>${esc(p.nome)}</h3><p class="notas">${esc(p.cat)} · ${esc(p.notas)}</p><div class="preco">${brl(Number(p.preco)||0)}</div><button class="add" data-id="${p.id}">Adicionar ao carrinho</button></div></article>`).join('');
 }
 $('filtros').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filtro=b.dataset.cat;renderFiltros();renderGrade()});$('grade').addEventListener('click',e=>{const b=e.target.closest('.add');if(!b)return;adicionar(+b.dataset.id)});
 
@@ -277,23 +279,37 @@ $('formNews').addEventListener('submit',e=>{
 });
 
 renderFiltros();
-fetch('/api/settings').then(r=>r.json()).then(c=>{if(c&&c.nomeLoja){CFG=c;document.querySelectorAll('.logo').forEach(el=>el.textContent=c.nomeLoja);document.title=c.nomeLoja+' Perfumes'}}).catch(()=>{});
+async function carregarLoja(){
+  const falhas=[];
+  try{
+    const resposta=await fetch('/api/settings');
+    if(!resposta.ok) throw new Error('HTTP '+resposta.status);
+    const c=await resposta.json();
+    if(c&&c.nomeLoja){CFG=c;document.querySelectorAll('.logo').forEach(el=>el.textContent=c.nomeLoja);document.title=c.nomeLoja+' Perfumes'}
+  }catch(erro){falhas.push('configurações: '+erro.message);console.error('[loja] configurações:',erro)}
 
-// Busca os produtos e atualiza a capa (hero) se houver produtos com foto
-fetch('/api/products').then(r=>r.json()).then(l=>{
-  if(Array.isArray(l)){
-    PRODUTOS=l;
-    carrinho=carrinho.filter(i=>PRODUTOS.find(p=>p.id===i.id));
-    
-    // Substitui o desenho pelos 3 primeiros perfumes com foto do Banco de Dados
-    const comFoto = PRODUTOS.filter(p => p.foto).slice(0, 3);
-    if(comFoto.length > 0){
-      $('heroArt').innerHTML = comFoto.map(p => `<img src="${esc(p.foto)}" alt="${esc(p.nome)}">`).join('');
-    }
+  try{
+    const resposta=await fetch('/api/products',{cache:'no-store'});
+    if(!resposta.ok) throw new Error('HTTP '+resposta.status);
+    const lista=await resposta.json();
+    if(!Array.isArray(lista)) throw new Error('Resposta inválida da API');
+    PRODUTOS=lista;
+    ERRO_PRODUTOS='';
+    carrinho=carrinho.filter(i=>PRODUTOS.some(p=>String(p.id)===String(i.id)));
+    const comFoto=PRODUTOS.filter(p=>p.foto).slice(0,3);
+    if(comFoto.length) $('heroArt').innerHTML=comFoto.map(p=>`<img src="${esc(p.foto)}" alt="${esc(p.nome)}" onerror="this.style.display='none'">`).join('');
+  }catch(erro){
+    ERRO_PRODUTOS='Não foi possível carregar os perfumes agora. Tente atualizar a página em alguns instantes.';
+    falhas.push('produtos: '+erro.message);
+    console.error('[loja] produtos:',erro);
   }
-}).catch(()=>{}).finally(()=>{
- salvar();renderGrade();renderCarrinho();
-});
+  salvar();
+  renderGrade();
+  renderCarrinho();
+  if(falhas.length) console.error('[loja] falhas no carregamento:',falhas.join('; '));
+}
+renderFiltros();
+carregarLoja();
 </script>
 </body>
 </html>
