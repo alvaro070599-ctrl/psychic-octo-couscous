@@ -1,14 +1,4 @@
-import { getRedis } from '../lib/redis.L });
-    novo.on('error', () => {});
-    try {
-      await novo.connect();
-    } catch (e) {
-      throw new Error('Falha ao conectar no Redis: ' + e.message);
-    }
-    client = novo;
-  }
-  return client;
-}
+import { getRedis } from '../lib/redis.js';
 
 const KEY = process.env.LOJA_ID ? 'config-loja-' + process.env.LOJA_ID : 'config-loja';
 const autorizado = (req) =>
@@ -19,29 +9,40 @@ function limparTelefone(v) {
 }
 
 export default async function handler(req, res) {
+  if (!['GET', 'POST'].includes(req.method)) {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ erro: 'Método não permitido.' });
+  }
+  if (req.method === 'POST' && !autorizado(req)) {
+    return res.status(401).json({ erro: 'Senha incorreta ou não autorizada.' });
+  }
+
   try {
-    const r = await getRedis();
+    const redis = await getRedis();
 
     if (req.method === 'GET') {
-      const v = await r.get(KEY);
-      const cfg = v ? JSON.parse(v) : { whatsapp: '', nomeLoja: 'Botoleto' };
-      return res.status(200).json(cfg);
+      const value = await redis.get(KEY);
+      const config = value ? JSON.parse(value) : { whatsapp: '', nomeLoja: 'Botoleto' };
+      return res.status(200).json(config);
     }
 
-    if (!autorizado(req)) return res.status(401).json({ erro: 'Senha incorreta' });
-
-    if (req.method === 'POST') {
-      const { whatsapp, nomeLoja } = req.body || {};
-      const numero = limparTelefone(whatsapp);
-      if (!numero || numero.length < 10)
-        return res.status(400).json({ erro: 'Informe um número de WhatsApp válido, com DDD.' });
-      const cfg = { whatsapp: numero, nomeLoja: String(nomeLoja || 'Botoleto').slice(0, 60) };
-      await r.set(KEY, JSON.stringify(cfg));
-      return res.status(200).json(cfg);
+    const { whatsapp, nomeLoja } = req.body || {};
+    const numero = limparTelefone(whatsapp);
+    if (!numero || numero.length < 10) {
+      return res.status(400).json({ erro: 'Informe um número de WhatsApp válido, com DDD.' });
     }
-
-    return res.status(405).end();
-  } catch (e) {
-    return res.status(500).json({ erro: 'Erro no servidor: ' + e.message });
+    const config = { whatsapp: numero, nomeLoja: String(nomeLoja || 'Botoleto').slice(0, 60) };
+    await redis.set(KEY, JSON.stringify(config));
+    return res.status(200).json(config);
+  } catch (error) {
+    console.error('[api/settings]', error);
+    const mensagem = error?.message || 'Falha inesperada.';
+    const indisponivel = /redis|timeout|connect|socket/i.test(mensagem);
+    return res.status(indisponivel ? 503 : 500).json({
+      erro: indisponivel
+        ? 'O banco de dados está temporariamente indisponível. Tente novamente em instantes.'
+        : 'Não foi possível carregar ou salvar as configurações.',
+      detalhe: mensagem,
+    });
   }
 }
