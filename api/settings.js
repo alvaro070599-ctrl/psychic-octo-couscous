@@ -1,9 +1,4 @@
-import { createClient } from 'redis';
-
-let client;
-async function db() {
-  if (!client) {
-    const novo = createClient({ url: process.env.REDIS_URL });
+import { getRedis } from '../lib/redis.L });
     novo.on('error', () => {});
     try {
       await novo.connect();
@@ -25,7 +20,7 @@ function limparTelefone(v) {
 
 export default async function handler(req, res) {
   try {
-    const r = await db();
+    const r = await getRedis();
 
     if (req.method === 'GET') {
       const v = await r.get(KEY);
