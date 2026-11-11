@@ -1,10 +1,5 @@
 import { put, del } from '@vercel/blob';
-import { createClient } from 'redis';
-
-let client;
-async function db() {
-  if (!client) {
-    const novo = createClient({ url: process.env.REDIS_URL });
+import { getRedis } from '../lib/redis.L });
     novo.on('error', () => {});
     try {
       await novo.connect();
@@ -16,12 +11,12 @@ async function db() {
   return client;
 }
 async function lerLista() {
-  const r = await db();
+  const r = await getRedis();
   const v = await r.get('produtos');
   return v ? JSON.parse(v) : [];
 }
 async function salvarLista(lista) {
-  const r = await db();
+  const r = await getRedis();
   await r.set('produtos', JSON.stringify(lista));
 }
 
