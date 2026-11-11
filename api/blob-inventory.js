@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const groups = new Map();
     for (const image of images) if (image.etag) groups.set(image.etag, [...(groups.get(image.etag) || []), image.pathname]);
     const duplicates = [...groups.entries()].filter(([, paths]) => paths.length > 1).map(([etag, paths]) => ({ etag, paths }));
-    return res.status(200).json({ images, count: images.length, duplicates, hasMore, cursor: cursor || null });
+    return res.status(200).json({ images, count: images.length, duplicates, duplicateCheck: images.every((b) => !!b.etag) ? 'complete' : 'etag-unavailable', hasMore, cursor: cursor || null });
   } catch (error) {
     console.error('[api/blob-inventory]', error?.message || error);
     return res.status(503).json({ erro: 'Não foi possível listar o Blob. Confirme a conexão BLOB_READ_WRITE_TOKEN.' });
