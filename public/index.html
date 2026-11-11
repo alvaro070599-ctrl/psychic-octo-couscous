@@ -243,8 +243,9 @@ function renderCarrinho(){
  const total_itens=carrinho.reduce((s,i)=>s+i.qtd,0);
  $('contador').textContent=total_itens;
  if(!carrinho.length){$('itens').innerHTML='<p class="vazio">Seu carrinho está vazio. Escolha um perfume para começar.</p>'}
- else{$('itens').innerHTML=carrinho.map(i=>{const p=PRODUTOS.find(x=>x.id===i.id);return `<div class="item">${arte(p)}<div><b>${esc(p.nome)}</b>${brl(p.preco)}<div class="qtd"><button data-a="menos" data-id="${p.id}" aria-label="Diminuir quantidade">−</button><span>${i.qtd}</span><button data-a="mais" data-id="${p.id}" aria-label="Aumentar quantidade">+</button></div></div><button class="remover" data-a="rm" data-id="${p.id}">Remover</button></div>`}).join('')}
- const total=carrinho.reduce((s,i)=>s+PRODUTOS.find(p=>p.id===i.id).preco*i.qtd,0);
+ else if(ERRO_PRODUTOS){$('itens').innerHTML='<p class="vazio">Não foi possível consultar os itens do carrinho. Tente novamente quando a loja voltar.</p>'}
+ else{$('itens').innerHTML=carrinho.map(i=>{const p=PRODUTOS.find(x=>String(x.id)===String(i.id));if(!p)return '';return `<div class="item">${arte(p)}<div><b>${esc(p.nome)}</b>${brl(Number(p.preco)||0)}<div class="qtd"><button data-a="menos" data-id="${p.id}" aria-label="Diminuir quantidade">−</button><span>${i.qtd}</span><button data-a="mais" data-id="${p.id}" aria-label="Aumentar quantidade">+</button></div></div><button class="remover" data-a="rm" data-id="${p.id}">Remover</button></div>`}).join('')}
+ const total=carrinho.reduce((s,i)=>{const p=PRODUTOS.find(p=>String(p.id)===String(i.id));return p?s+(Number(p.preco)||0)*i.qtd:s},0);
  if($('total'))$('total').textContent=brl(total);
  if($('finalizar'))$('finalizar').disabled=!carrinho.length;
 }
