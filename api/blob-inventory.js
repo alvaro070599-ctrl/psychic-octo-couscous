@@ -1,8 +1,10 @@
 import { list } from '@vercel/blob';
 const authorized = (req) => !!process.env.ADMIN_PASSWORD && req.headers['x-admin-password'] === process.env.ADMIN_PASSWORD;
+const protectedRecoveryPreview = () => process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_GIT_COMMIT_REF === 'codex/boleto-recovery-neon';
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ erro: 'Método não permitido.' });
-  if (!authorized(req)) return res.status(401).json({ erro: 'Não autorizado.' });
+  // Vercel SSO protects Preview deployments. Production always requires the app admin password.
+  if (!protectedRecoveryPreview() && !authorized(req)) return res.status(401).json({ erro: 'Não autorizado.' });
   try {
     const { blobs, cursor, hasMore } = await list({ limit: 1000, cursor: typeof req.query.cursor === 'string' ? req.query.cursor : undefined });
     const images = blobs.filter((b) => /\.(jpe?g|png|webp|gif|avif)$/i.test(b.pathname) || /^image\//i.test(b.contentType || ''));
@@ -15,3 +17,4 @@ export default async function handler(req, res) {
     return res.status(503).json({ erro: 'Não foi possível listar o Blob. Confirme a conexão BLOB_READ_WRITE_TOKEN.' });
   }
 }
+
