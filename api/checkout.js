@@ -1,68 +1,24 @@
-import { createClient } from 'redis';
-
-let client;
-
-async function db() {
-  if (!client) {
-    const novo = createClient({ url: process.env.REDIS_URL });
-    novo.on('error', () => {});
-    try {
-      await novo.connect();
-    } catch (e) {
-      throw new Error('Falha ao conectar no Redis: ' + e.message);
-    }
-    client = novo;
-  }
-  return client;
-}
-
-async function lerLista() {
-  const r = await db();
-  const v = await r.get('produtos');
-  return v ? JSON.parse(v) : [];
-}
+import { listProducts } from '../lib/db.js';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-
+  if (req.method !== 'POST') { res.setHeader('Allow','POST'); return res.status(405).end(); }
   try {
-    // Removemos totalmente a busca por cupom
     const { itens, cliente } = req.body || {};
-    const lista = await lerLista();
-    
+    const lista = await listProducts();
     const items = [];
     let base = 0;
-
     for (const i of Array.isArray(itens) ? itens : []) {
-      const p = lista.find((x) => x.id === i.id);
-      const q = Math.min(Math.max(parseInt(i.qtd) || 0, 0), 20);
+      const p = lista.find((x) => String(x.id) === String(i.id));
+      const q = Math.min(Math.max(parseInt(i.qtd,10) || 0, 0), 20);
       if (!p || !q) continue;
-
-      // Apenas o preço original do produto, sem descontos
-      const unit = Math.round(p.preco * 100) / 100;
+      const unit = Math.round(Number(p.preco) * 100) / 100;
       base += unit * q;
-      
-      items.push({
-        id: String(p.id),
-        title: p.nome,
-        quantity: q,
-        unit_price: unit
-      });
+      items.push({ id:String(p.id), title:p.nome, quantity:q, unit_price:unit });
     }
-
-    if (!items.length) return res.status(400).json({ erro: 'Carrinho vazio' });
-
-    // Valor total formatado
-    const totalFormatado = base.toFixed(2);
-    
-    return res.status(200).json({
-      sucesso: true,
-      itens: items,
-      total: totalFormatado,
-      cliente: cliente || {}
-    });
-
-  } catch (e) {
-    return res.status(500).json({ erro: e.message });
+    if (!items.length) return res.status(400).json({ erro:'Carrinho vazio' });
+    return res.status(200).json({ sucesso:true, itens:items, total:base.toFixed(2), cliente:cliente || {} });
+  } catch (error) {
+    console.error('[api/checkout]', error?.message || error);
+    return res.status(/DATABASE_URL/.test(error?.message || '') ? 503 : 500).json({ erro:'Não foi possível carregar os produtos para o carrinho.' });
   }
 }

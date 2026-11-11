@@ -73,7 +73,7 @@ async function entrar(){
   produtos=await r.json();$('login').hidden=true;$('painel').hidden=false;listar();carregarCfg();return true;
 }
 function listar(){
-  const q=norm($('busca').value);const vis=produtos.filter(p=>norm(p.nome).includes(q));$('lista').innerHTML=!produtos.length?'<p>Nenhum produto cadastrado ainda.</p>':!vis.length?'<p>Nenhum produto encontrado.</p>':vis.map(p=>`<div class="prod">${p.foto?`<img src="${esc(p.foto)}" alt="">`:'<div class="sem"></div>'}<div><b>${esc(p.nome)}</b><br>${esc(p.cat)} · R$ ${p.preco.toFixed(2).replace('.',',')}</div><div class="linha"><button class="sec" data-a="e" data-id="${p.id}">Editar</button><button class="perigo" data-a="x" data-id="${p.id}">Excluir</button></div></div>`).join('');
+  const q=norm($('busca').value);const vis=produtos.filter(p=>norm(p.nome).includes(q));$('lista').innerHTML=!produtos.length?'<p>Nenhum produto cadastrado ainda.</p>':!vis.length?'<p>Nenhum produto encontrado.</p>':vis.map(p=>`<div class="prod">${p.foto?`<img src="${esc(p.foto)}" alt="">`:'<div class="sem"></div>'}<div><b>${esc(p.nome)}</b><br>${esc(p.cat)} · R$ ${Number(p.preco).toFixed(2).replace('.',',')}</div><div class="linha"><button class="sec" data-a="e" data-id="${esc(p.id)}">Editar</button><button class="perigo" data-a="x" data-id="${esc(p.id)}">Excluir</button></div></div>`).join('');
 }
 async function recarregar(){const r=await fetch('/api/products');produtos=await r.json();listar()}
 function limpar(){editando=null;imagem='';$('fProd').reset();$('prev').hidden=true;$('salvar').textContent='Adicionar produto';$('cancelar').hidden=true}
@@ -98,9 +98,9 @@ $('fProd').addEventListener('submit',async e=>{
 });
 
 $('lista').addEventListener('click',async e=>{
-  const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,p=produtos.find(x=>x.id===id);
+  const b=e.target.closest('button');if(!b)return;const id=String(b.dataset.id),p=produtos.find(x=>String(x.id)===id);
   if(b.dataset.a==='e'&&p){editando=id;imagem='';$('nome').value=p.nome;$('cat').value=p.cat;$('preco').value=p.preco;$('notas').value=p.notas;if(p.foto){$('prev').src=p.foto;$('prev').hidden=false}else $('prev').hidden=true;$('salvar').textContent='Salvar alterações';$('cancelar').hidden=false;scrollTo({top:0,behavior:'smooth'})}
-  if(b.dataset.a==='x'&&confirm('Excluir este produto?')){await fetch('/api/products?id='+id,{method:'DELETE',headers:H()});recarregar()}
+  if(b.dataset.a==='x'&&confirm('Excluir este produto? (A fotografia original será preservada.)')){await fetch('/api/products?id='+encodeURIComponent(id),{method:'DELETE',headers:H()});recarregar()}
 });
 async function carregarCfg(){
   try{const c=await (await fetch('/api/settings')).json();$('cfgNome').value=c.nomeLoja||'';$('cfgWhats').value=c.whatsapp||''}catch(e){}
